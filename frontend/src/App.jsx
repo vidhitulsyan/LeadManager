@@ -1,17 +1,15 @@
-import { useEffect, useState } from 'react'
-import { listLeads } from './api/leads'
+import { useState } from 'react'
+import LeadFilters from './components/LeadFilters'
+import LeadTable from './components/LeadTable'
+import { useDebouncedValue } from './hooks/useDebouncedValue'
+import { useLeads } from './hooks/useLeads'
 
 export default function App() {
-  const [leads, setLeads] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const debouncedSearch = useDebouncedValue(search.trim())
 
-  useEffect(() => {
-    listLeads()
-      .then(setLeads)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+  const { leads, loading, error } = useLeads({ search: debouncedSearch, status })
 
   return (
     <main className="container">
@@ -19,8 +17,20 @@ export default function App() {
         <h1>Lead Manager</h1>
       </header>
 
+      <LeadFilters
+        search={search}
+        status={status}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+      />
+
       {error && <div className="alert alert-error">{error}</div>}
-      {loading ? <p>Loading…</p> : !error && <p>{leads.length} leads</p>}
+
+      {loading && leads.length === 0 ? (
+        <p className="empty-state">Loading…</p>
+      ) : (
+        !error && <LeadTable leads={leads} hasFilters={Boolean(debouncedSearch || status)} />
+      )}
     </main>
   )
 }

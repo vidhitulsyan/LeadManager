@@ -3,7 +3,7 @@ import StatusBadge from './StatusBadge'
 // SQLite stores UTC timestamps as "YYYY-MM-DD HH:MM:SS".
 const formatDate = (value) => new Date(`${value.replace(' ', 'T')}Z`).toLocaleDateString()
 
-export default function LeadTable({ leads, hasFilters, onEdit }) {
+export default function LeadTable({ leads, hasFilters, onEdit, onDelete }) {
   if (leads.length === 0) {
     return (
       <p className="empty-state">
@@ -42,6 +42,9 @@ export default function LeadTable({ leads, hasFilters, onEdit }) {
               <td className="cell-actions">
                 <button type="button" className="btn btn-small btn-secondary" onClick={() => onEdit(lead)}>
                   Edit
+                </button>
+                <button type="button" className="btn btn-small btn-danger" onClick={() => onDelete(lead)}>
+                  Delete
                 </button>
               </td>
             </tr>

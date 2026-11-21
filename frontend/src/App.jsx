@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { createLead, updateLead } from './api/leads'
+import { createLead, deleteLead, updateLead } from './api/leads'
+import ConfirmDialog from './components/ConfirmDialog'
 import LeadFilters from './components/LeadFilters'
 import LeadForm from './components/LeadForm'
 import LeadTable from './components/LeadTable'
@@ -30,6 +31,15 @@ export default function App() {
     reload()
   }
 
+  const [leadToDelete, setLeadToDelete] = useState(null)
+  const closeDeleteDialog = useCallback(() => setLeadToDelete(null), [])
+
+  const handleDelete = async () => {
+    await deleteLead(leadToDelete.id)
+    closeDeleteDialog()
+    reload()
+  }
+
   return (
     <main className="container">
       <header className="page-header">
@@ -56,6 +66,7 @@ export default function App() {
             leads={leads}
             hasFilters={Boolean(debouncedSearch || status)}
             onEdit={setFormLead}
+            onDelete={setLeadToDelete}
           />
         )
       )}
@@ -63,6 +74,17 @@ export default function App() {
       {formLead && (
         <Modal title={isEditing ? 'Edit lead' : 'Add lead'} onClose={closeForm}>
           <LeadForm lead={formLead} onSubmit={handleSave} onCancel={closeForm} />
+        </Modal>
+      )}
+
+      {leadToDelete && (
+        <Modal title="Delete lead" onClose={closeDeleteDialog}>
+          <ConfirmDialog
+            message={`Are you sure you want to delete "${leadToDelete.name}"? This cannot be undone.`}
+            confirmLabel="Delete"
+            onConfirm={handleDelete}
+            onCancel={closeDeleteDialog}
+          />
         </Modal>
       )}
     </main>
